@@ -10,6 +10,6 @@ public interface EmployeeRepository {
     Employee save(Employee employee);
     Optional<Employee> findById (UUID id);
     List<Employee> findAll();
-    boolean deleteById(UUID id);
+    void deleteById(UUID id);
     boolean existsByEmail(String email);
 }

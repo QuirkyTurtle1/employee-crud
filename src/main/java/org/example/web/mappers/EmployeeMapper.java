@@ -15,6 +15,14 @@ public class EmployeeMapper {
         return newEmployee;
     }
 
+    public static void updateEmployee(Employee employeeTo, EmployeeRequest employeeRequest) {
+        employeeTo.setFirstName(employeeRequest.getFirstName());
+        employeeTo.setLastName(employeeRequest.getLastName());
+        employeeTo.setEmail(employeeRequest.getEmail());
+        employeeTo.setPassword(employeeRequest.getPassword());
+        employeeTo.setRole(employeeRequest.getRole());
+    }
+
     public static EmployeeResponse mapToResponse (Employee employee) {
         EmployeeResponse employeeResponse = new EmployeeResponse();
         employeeResponse.setEmail(employee.getEmail());

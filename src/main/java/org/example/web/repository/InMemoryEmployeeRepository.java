@@ -2,11 +2,14 @@ package org.example.web.repository;
 
 import jakarta.validation.constraints.NotBlank;
 import org.example.web.model.Employee;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Repository;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +22,9 @@ public class InMemoryEmployeeRepository implements EmployeeRepository {
 
     @Override
     public Employee save(Employee employee) {
+        if (employee.getId() == null) {
+            employee.setId(UUID.randomUUID());
+        }
         employeeMap.put(employee.getId(), employee);
         return employee;
     }
@@ -34,8 +40,11 @@ public class InMemoryEmployeeRepository implements EmployeeRepository {
     }
 
     @Override
-    public boolean deleteById(UUID id) {
-        return employeeMap.remove(id) != null;
+    public void deleteById(UUID id) {
+        Employee removed = employeeMap.remove(id);
+        if (removed== null) {
+            throw new NoSuchElementException("Employee not found: " + id);
+        }
     }
 
     @Override
