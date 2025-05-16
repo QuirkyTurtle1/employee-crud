@@ -1,19 +1,25 @@
 package org.example.web.service;
 
 import lombok.RequiredArgsConstructor;
+import org.example.web.dto.EmployeeFilter;
 import org.example.web.dto.EmployeeRequest;
 import org.example.web.dto.EmployeeResponse;
 import org.example.web.mappers.EmployeeMapper;
 import org.example.web.model.Employee;
 import org.example.web.repository.EmployeeRepository;
+import org.example.web.util.EmployeeComparatorFactory;
+import org.example.web.util.EmployeePredicateFactory;
+import org.example.web.util.SortParser;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 import java.util.UUID;
+import java.util.function.Predicate;
 
 import static org.example.web.mappers.EmployeeMapper.mapToEmployee;
 import static org.example.web.mappers.EmployeeMapper.mapToResponse;
@@ -50,8 +56,13 @@ public class EmployeeService {
 
     }
 
-    public List<EmployeeResponse> listEmployees() {
+    public List<EmployeeResponse> listEmployees(EmployeeFilter filter) {
+        Predicate<Employee> predicate = EmployeePredicateFactory.build(filter);
+        Comparator<Employee> comparator = EmployeeComparatorFactory
+                .build(SortParser.parse(filter.sort()));
         return employeeRepository.findAll().stream()
+                .filter(predicate)
+                .sorted(comparator)
                 .map(EmployeeMapper::mapToResponse)
                 .toList();
     }
