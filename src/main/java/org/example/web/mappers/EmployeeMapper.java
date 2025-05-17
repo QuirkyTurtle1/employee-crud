@@ -29,7 +29,7 @@ public class EmployeeMapper {
         employeeResponse.setId(employee.getId());
         employeeResponse.setFirstName(employee.getFirstName());
         employeeResponse.setLastName(employee.getLastName());
-        employeeResponse.setRole(employee.getRole());
+        employeeResponse.setRole(employee.getRole().getDescription());
         return employeeResponse;
     }
 
