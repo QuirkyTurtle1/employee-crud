@@ -10,6 +10,7 @@ import org.example.web.model.EmployeeRole;
 import org.example.web.repository.EmployeeRepository;
 import org.example.web.service.EmployeeService;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,33 +32,33 @@ public class EmployeeController {
     private final EmployeeService employeeService;
 
     @PostMapping("/employees")
-    public EmployeeResponse addEmployee(@Valid @RequestBody EmployeeRequest employeeRequest) {
-        return employeeService.addEmployee(employeeRequest);
+    public ResponseEntity<EmployeeResponse> create (@Valid @RequestBody EmployeeRequest employeeRequest) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.create(employeeRequest));
     }
 
-    @GetMapping("/employees/{id}")
-    public EmployeeResponse getEmployeeById (@PathVariable UUID id) {
-        return employeeService.getEmployeeById(id);
-    }
-
-    @GetMapping("/employees")
-    public List<EmployeeResponse> listEmployees (
-            @RequestParam Optional<String> firstName,
-            @RequestParam Optional<EmployeeRole> role,
-            @RequestParam Optional<String> sort
-    ) {
-        EmployeeFilter filter = new EmployeeFilter(firstName, role, sort);
-        return employeeService.listEmployees(filter);
-    }
-
-    @PutMapping("/employees/{id}")
-    public EmployeeResponse updateEmployee (@PathVariable UUID id, @Valid @RequestBody EmployeeRequest employeeRequest) {
-        return employeeService.updateEmployee(id, employeeRequest);
-    }
-
-    @DeleteMapping("/employees/{id}")
-    @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void deleteEmployee (@PathVariable UUID id) {
-        employeeService.deleteEmployee(id);
-    }
+//    @GetMapping("/employees/{id}")
+//    public EmployeeResponse getEmployeeById (@PathVariable UUID id) {
+//        return employeeService.getEmployeeById(id);
+//    }
+//
+//    @GetMapping("/employees")
+//    public List<EmployeeResponse> listEmployees (
+//            @RequestParam Optional<String> firstName,
+//            @RequestParam Optional<EmployeeRole> role,
+//            @RequestParam Optional<String> sort
+//    ) {
+//        EmployeeFilter filter = new EmployeeFilter(firstName, role, sort);
+//        return employeeService.listEmployees(filter);
+//    }
+//
+//    @PutMapping("/employees/{id}")
+//    public EmployeeResponse updateEmployee (@PathVariable UUID id, @Valid @RequestBody EmployeeRequest employeeRequest) {
+//        return employeeService.updateEmployee(id, employeeRequest);
+//    }
+//
+//    @DeleteMapping("/employees/{id}")
+//    @ResponseStatus(HttpStatus.NO_CONTENT)
+//    public void deleteEmployee (@PathVariable UUID id) {
+//        employeeService.deleteEmployee(id);
+//    }
 }
