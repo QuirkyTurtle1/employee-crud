@@ -9,6 +9,9 @@ import org.example.web.model.Employee;
 import org.example.web.model.EmployeeRole;
 import org.example.web.repository.EmployeeRepository;
 import org.example.web.service.EmployeeService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -36,29 +39,27 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.CREATED).body(employeeService.create(employeeRequest));
     }
 
-//    @GetMapping("/employees/{id}")
-//    public EmployeeResponse getEmployeeById (@PathVariable UUID id) {
-//        return employeeService.getEmployeeById(id);
-//    }
-//
-//    @GetMapping("/employees")
-//    public List<EmployeeResponse> listEmployees (
-//            @RequestParam Optional<String> firstName,
-//            @RequestParam Optional<EmployeeRole> role,
-//            @RequestParam Optional<String> sort
-//    ) {
-//        EmployeeFilter filter = new EmployeeFilter(firstName, role, sort);
-//        return employeeService.listEmployees(filter);
-//    }
-//
-//    @PutMapping("/employees/{id}")
-//    public EmployeeResponse updateEmployee (@PathVariable UUID id, @Valid @RequestBody EmployeeRequest employeeRequest) {
-//        return employeeService.updateEmployee(id, employeeRequest);
-//    }
-//
-//    @DeleteMapping("/employees/{id}")
-//    @ResponseStatus(HttpStatus.NO_CONTENT)
-//    public void deleteEmployee (@PathVariable UUID id) {
-//        employeeService.deleteEmployee(id);
-//    }
+    @GetMapping("/employees/{id}")
+    public EmployeeResponse getOne (@PathVariable UUID id) {
+        return employeeService.findById(id);
+    }
+
+    @GetMapping("/employees")
+    public Page<EmployeeResponse> listEmployees (EmployeeFilter filter,
+                                                 @PageableDefault(size=20) Pageable pageable
+    ) {
+        return employeeService.findAll(filter, pageable);
+    }
+
+    @PutMapping("/employees/{id}")
+    public EmployeeResponse updateEmployee (@PathVariable UUID id,
+                                            @Valid @RequestBody EmployeeRequest employeeRequest) {
+        return employeeService.updateEmployee(id, employeeRequest);
+    }
+
+    @DeleteMapping("/employees/{id}")
+    @ResponseStatus(HttpStatus.NO_CONTENT)
+    public void delete (@PathVariable UUID id) {
+        employeeService.delete(id);
+    }
 }

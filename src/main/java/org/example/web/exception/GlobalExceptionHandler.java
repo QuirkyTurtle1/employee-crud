@@ -23,4 +23,11 @@ public class GlobalExceptionHandler {
                 .body(new ApiRecord(ex.getMessage()));
     }
 
+    @ExceptionHandler(NotFoundException.class)
+    public ResponseEntity<ApiRecord> handleNotFound (NotFoundException ex) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(new ApiRecord(ex.getMessage()));
+    }
+
+
 }
