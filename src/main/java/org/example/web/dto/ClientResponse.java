@@ -3,21 +3,19 @@ package org.example.web.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.example.web.model.EmployeeRole;
 
 import java.util.UUID;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
 @Builder
-public class EmployeeResponse {
+@NoArgsConstructor
+@AllArgsConstructor
+public class ClientResponse {
     private UUID id;
     private String firstName;
     private String lastName;
     private String email;
-    private String role;
+    private String phone;
+    private int ordersCount;
 }
