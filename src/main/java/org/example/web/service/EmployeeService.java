@@ -3,9 +3,9 @@ package org.example.web.service;
 import jakarta.transaction.Transactional;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.web.dto.EmployeeFilter;
-import org.example.web.dto.EmployeeRequest;
-import org.example.web.dto.EmployeeResponse;
+import org.example.web.dto.employee.EmployeeFilter;
+import org.example.web.dto.employee.EmployeeRequest;
+import org.example.web.dto.employee.EmployeeResponse;
 import org.example.web.exception.DuplicateEmailException;
 import org.example.web.exception.NotFoundException;
 import org.example.web.mappers.EmployeeMapper;
@@ -26,7 +26,6 @@ import java.util.UUID;
 public class EmployeeService {
 
     private final EmployeeRepository repository;
-
     private final EmployeeMapper mapper;
 
 
@@ -36,8 +35,8 @@ public class EmployeeService {
         }
         Employee entity = mapper.toEntity(employeeRequest);
         entity.setPassword(employeeRequest.getPassword());
-        repository.save(entity);
-        return mapper.toDto(entity);
+        Employee saved = repository.save(entity);
+        return mapper.toDto(saved);
     }
 
 

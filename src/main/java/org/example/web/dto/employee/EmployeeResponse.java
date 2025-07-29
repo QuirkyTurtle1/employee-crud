@@ -1,4 +1,4 @@
-package org.example.web.dto;
+package org.example.web.dto.employee;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -8,14 +8,13 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 
 @Data
-@Builder
-@NoArgsConstructor
 @AllArgsConstructor
-public class ClientResponse {
+@NoArgsConstructor
+@Builder
+public class EmployeeResponse {
     private UUID id;
     private String firstName;
     private String lastName;
     private String email;
-    private String phone;
-    private int ordersCount;
+    private String role;
 }

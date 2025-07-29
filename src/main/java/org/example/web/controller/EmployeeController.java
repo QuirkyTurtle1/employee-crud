@@ -2,12 +2,9 @@ package org.example.web.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.example.web.dto.EmployeeFilter;
-import org.example.web.dto.EmployeeRequest;
-import org.example.web.dto.EmployeeResponse;
-import org.example.web.model.Employee;
-import org.example.web.model.EmployeeRole;
-import org.example.web.repository.EmployeeRepository;
+import org.example.web.dto.employee.EmployeeFilter;
+import org.example.web.dto.employee.EmployeeRequest;
+import org.example.web.dto.employee.EmployeeResponse;
 import org.example.web.service.EmployeeService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,12 +17,9 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @RequiredArgsConstructor

@@ -1,12 +1,13 @@
 package org.example.web.mappers;
 
-import org.example.web.dto.EmployeeRequest;
-import org.example.web.dto.OrderRequest;
-import org.example.web.dto.OrderResponse;
+import org.example.web.dto.order.OrderRequest;
+import org.example.web.dto.order.OrderResponse;
 import org.example.web.model.Order;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
+import org.springframework.context.annotation.Primary;
 
+@Primary
 @Mapper(componentModel = "spring")
 public interface OrderMapper {
 

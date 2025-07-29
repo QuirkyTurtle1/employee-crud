@@ -1,12 +1,13 @@
-package org.example.web.dto;
+package org.example.web.dto.client;
 
 import org.example.web.model.EmployeeRole;
 
 import java.util.Optional;
 
-public record EmployeeFilter(
+public record ClientFilter(
         Optional<String> firstName,
         Optional<String> lastName,
-        Optional<EmployeeRole> role
+        Optional<String> email,
+        Optional<String> phone
 ) {
 }

@@ -1,4 +1,4 @@
-package org.example.web.dto;
+package org.example.web.dto.order;
 
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;

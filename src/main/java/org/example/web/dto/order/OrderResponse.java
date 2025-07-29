@@ -1,4 +1,4 @@
-package org.example.web.dto;
+package org.example.web.dto.order;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -17,5 +17,5 @@ public class OrderResponse {
     private UUID id;
     private Instant createdAt;
     private OrderStatus status;
-    private UUID clientID;
+    private UUID clientId;
 }
