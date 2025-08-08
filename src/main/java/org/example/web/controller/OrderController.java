@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.example.web.dto.order.OrderFilter;
 import org.example.web.dto.order.OrderRequest;
 import org.example.web.dto.order.OrderResponse;
+import org.example.web.dto.orderProduct.ChangeQuantityRequest;
+import org.example.web.dto.orderProduct.OrderProductRequest;
 import org.example.web.model.OrderStatus;
 import org.example.web.service.OrderService;
 import org.springframework.data.domain.Page;
@@ -62,6 +64,25 @@ public class OrderController {
                                             sort = "createdAt",
                                             direction = Sort.Direction.DESC) Pageable pageable) {
         return service.findAll(filter, pageable);
+    }
+
+    @PostMapping("/{orderId}")
+    public OrderResponse addProduct (@PathVariable UUID orderId,
+                                     @Valid @RequestBody OrderProductRequest req) {
+        return service.addProduct(orderId, req);
+    }
+
+    @PatchMapping("/{orderId}/items/{productId}")
+    public OrderResponse changeProductQuantity (@PathVariable UUID orderId,
+                                                @PathVariable UUID productId,
+                                                @Valid @RequestBody ChangeQuantityRequest req) {
+        return service.changeProductQuantity(orderId, productId, req.quantity());
+    }
+
+    @DeleteMapping("/{orderId}/items/{productId}")
+    public OrderResponse removeProduct (@PathVariable UUID orderId,
+                                        @PathVariable UUID productId) {
+        return service.removeProduct(orderId, productId);
     }
 
 }

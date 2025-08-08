@@ -4,8 +4,8 @@ import java.util.UUID;
 
 public class NotFoundException extends RuntimeException{
 
-        public NotFoundException (UUID id) {
-            super ("Сотрудник с id " +id + " не существует");
+        public NotFoundException (String entity, UUID id) {
+            super (entity +" с id " +id + " не существует");
         }
 
 }

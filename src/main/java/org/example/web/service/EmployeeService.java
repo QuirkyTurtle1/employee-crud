@@ -29,7 +29,7 @@ public class EmployeeService {
     private final EmployeeMapper mapper;
 
 
-    public EmployeeResponse create (@Valid EmployeeRequest employeeRequest) {
+    public EmployeeResponse create ( EmployeeRequest employeeRequest) {
         if (repository.existsByEmailIgnoreCase(employeeRequest.getEmail())) {
             throw new DuplicateEmailException(employeeRequest.getEmail());
         }
@@ -42,7 +42,7 @@ public class EmployeeService {
 
     public EmployeeResponse findById(UUID id) {
         Employee employee = repository.findById(id)
-                .orElseThrow(()-> new NotFoundException(id));
+                .orElseThrow(()-> new NotFoundException("Employee",id));
 
         return mapper.toDto(employee);
 
@@ -59,7 +59,7 @@ public class EmployeeService {
     }
 
     public EmployeeResponse updateEmployee(UUID id, @Valid EmployeeRequest employeeRequest) {
-        Employee employee = repository.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Employee employee = repository.findById(id).orElseThrow(() -> new NotFoundException("Employee",id));
 
         if (!employee.getEmail().equalsIgnoreCase(employeeRequest.getEmail())
                 && repository.existsByEmailIgnoreCase(employeeRequest.getEmail())) {
@@ -76,7 +76,7 @@ public class EmployeeService {
 
     public void delete(UUID id) {
         if (!repository.existsById(id)) {
-            throw new NotFoundException(id);
+            throw new NotFoundException("Employee",id);
         }
         repository.deleteById(id);
     }

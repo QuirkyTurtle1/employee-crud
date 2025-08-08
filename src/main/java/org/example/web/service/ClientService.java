@@ -37,12 +37,12 @@ public class ClientService {
     }
 
     public ClientResponse getOne(UUID id) {
-        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException("Client", id));
         return mapper.toResponse(entity);
     }
 
     public ClientResponse update(UUID id, ClientRequest req) {
-        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException("Client",id));
         if (!entity.getEmail().equalsIgnoreCase(req.getEmail())
                 && repo.existsByEmailIgnoreCase(req.getEmail())) {
             throw new DuplicateEmailException(req.getEmail());
@@ -52,7 +52,7 @@ public class ClientService {
     }
 
     public void delete(UUID id) {
-        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException(id));
+        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException("Client", id));
         entity.getOrders().forEach(o -> o.setClient(null));
         repo.delete(entity);
     }
