@@ -28,7 +28,7 @@ import java.util.UUID;
 public class ClientController {
 
     private final ClientService service;
-    private final ClientService clientService;
+
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)

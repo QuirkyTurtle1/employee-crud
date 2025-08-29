@@ -56,10 +56,9 @@ public class OrderService {
                 ? req.getStatus()
                 : OrderStatus.NEW;
 
-        Order order = Order.builder()                                   // 3
+        Order order = Order.builder()
                 .client(client)
                 .status(status)
-                .createdAt(Instant.now())
                 .items(items)
                 .build();
         items.forEach(i -> i.setOrder(order));

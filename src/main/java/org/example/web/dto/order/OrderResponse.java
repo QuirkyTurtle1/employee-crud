@@ -8,6 +8,7 @@ import org.example.web.dto.orderProduct.OrderProductResponse;
 import org.example.web.model.OrderStatus;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -17,7 +18,7 @@ import java.util.UUID;
 @Builder
 public class OrderResponse {
     private UUID id;
-    private Instant createdAt;
+    private LocalDateTime createdAt;
     private OrderStatus status;
     private UUID clientId;
     private List<OrderProductResponse> items;
