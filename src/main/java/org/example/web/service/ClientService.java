@@ -10,13 +10,18 @@ import org.example.web.exception.NotFoundException;
 import org.example.web.mappers.ClientMapper;
 import org.example.web.model.Client;
 import org.example.web.repository.ClientRepository;
+import org.example.web.repository.OrderRepository;
 import org.example.web.util.SpecBuilder;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -24,6 +29,7 @@ import java.util.UUID;
 public class ClientService {
 
     private final ClientRepository repo;
+    private final OrderRepository orderRepo;
     private final ClientMapper mapper;
 
 
@@ -31,29 +37,39 @@ public class ClientService {
         if (repo.existsByEmailIgnoreCase(req.getEmail())) {
             throw new DuplicateEmailException(req.getEmail());
         }
-        Client entity = mapper.toEntity(req);
-        Client saved = repo.save(entity);
-        return mapper.toResponse(saved);
+        Client saved = repo.save(mapper.toEntity(req));
+
+        return mapper.toResponse(saved, Map.of(saved.getId(), 0L));
     }
 
     public ClientResponse getOne(UUID id) {
-        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException("Client", id));
-        return mapper.toResponse(entity);
+        Client entity = repo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Client", id));
+        long cnt = repo.countOrdersByClientId(id);
+        return mapper.toResponse(entity, Map.of(id, cnt));
     }
 
     public ClientResponse update(UUID id, ClientRequest req) {
-        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException("Client",id));
+        Client entity = repo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Client", id));
+
         if (!entity.getEmail().equalsIgnoreCase(req.getEmail())
                 && repo.existsByEmailIgnoreCase(req.getEmail())) {
             throw new DuplicateEmailException(req.getEmail());
         }
+
         mapper.updateEntity(req, entity);
-        return mapper.toResponse(entity);
+        long cnt = repo.countOrdersByClientId(id);
+        return mapper.toResponse(entity, Map.of(id, cnt));
     }
 
     public void delete(UUID id) {
-        Client entity = repo.findById(id).orElseThrow(() -> new NotFoundException("Client", id));
-        entity.getOrders().forEach(o -> o.setClient(null));
+        Client entity = repo.findById(id)
+                .orElseThrow(() -> new NotFoundException("Client", id));
+
+        if (orderRepo.existsByClientId(id)) {
+            throw new IllegalStateException("У клиента есть заказы — удаление запрещено");
+        }
         repo.delete(entity);
     }
 
@@ -65,7 +81,19 @@ public class ClientService {
                 .and(SpecBuilder.like("email", filter.email().orElse(null)))
                 .and(SpecBuilder.like("phone", filter.phone().orElse(null)));
 
-        return repo.findAll(spec, pageable).map(mapper::toResponse);
+        Page<Client> page = repo.findAll(spec, pageable);
+        List<UUID> ids = page.getContent().stream().map(Client::getId).toList();
+
+        Map<UUID, Long> counts = ids.isEmpty() ? Map.of()
+                : repo.countOrdersByClientIds(ids).stream()
+                .collect(Collectors.toMap(ClientRepository.ClientOrderCount::getClientId,
+                        ClientRepository.ClientOrderCount::getCnt));
+
+        List<ClientResponse> content = page.getContent().stream()
+                .map(c -> mapper.toResponse(c, counts))
+                .toList();
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
 

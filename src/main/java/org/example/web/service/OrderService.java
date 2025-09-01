@@ -17,21 +17,23 @@ import org.example.web.model.OrderProduct;
 import org.example.web.model.OrderStatus;
 import org.example.web.model.Product;
 import org.example.web.repository.ClientRepository;
+import org.example.web.repository.OrderProductRepository;
 import org.example.web.repository.OrderRepository;
 import org.example.web.repository.ProductRepository;
 import org.example.web.util.OrderSpecs;
-import org.example.web.util.SpecBuilder;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
-import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static java.util.stream.Collectors.*;
@@ -43,7 +45,8 @@ public class OrderService {
 
     private final OrderRepository orderRepo;
     private final ClientRepository clientRepo;
-    private final ProductRepository productRepository;
+    private final ProductRepository productRepo;
+    private final OrderProductRepository orderProductRepo;
     private final OrderMapper mapper;
 
     public OrderResponse create(OrderRequest req) {
@@ -63,7 +66,9 @@ public class OrderService {
                 .build();
         items.forEach(i -> i.setOrder(order));
 
-        return mapper.toResponse(orderRepo.save(order));
+        Order saved = orderRepo.save(order);
+
+        return getOne(saved.getId());
     }
 
     public OrderResponse updateStatus(UUID id, OrderStatus status) {
@@ -71,12 +76,11 @@ public class OrderService {
 
         entity.setStatus(status);
 
-
-        return mapper.toResponse(entity);
+        return getOne(id);
     }
 
     public OrderResponse getOne(UUID id) {
-        Order entity = orderRepo.findById(id).orElseThrow(() -> new NotFoundException("Order", id));
+        Order entity = orderRepo.findDetailedById(id).orElseThrow(() -> new NotFoundException("Order", id));
 
         return mapper.toResponse(entity);
     }
@@ -90,21 +94,36 @@ public class OrderService {
     public Page<OrderResponse> findAll(OrderFilter filter, Pageable pageable) {
         Specification<Order> spec = OrderSpecs.build(filter);
 
-        return orderRepo.findAll(spec, pageable).map(mapper::toResponse);
+        Page<Order> page = orderRepo.findAll(spec, pageable);
+
+        List<UUID> ids = page.getContent().stream().map(Order::getId).toList();
+        if (ids.isEmpty()) {
+            return new PageImpl<>(List.of(), pageable, page.getTotalElements());
+        }
+
+        List<Order> detailed = orderRepo.findByIdIn(ids);
+        Map<UUID, Order> byId = detailed.stream()
+                .collect(Collectors.toMap(Order::getId, Function.identity()));
+
+        List<OrderResponse> content = ids.stream()
+                .map(byId::get)
+                .filter(Objects::nonNull)
+                .map(mapper::toResponse)
+                .toList();
+
+        return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
     public OrderResponse addProduct(UUID orderId, @Valid OrderProductRequest req) {
-        Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order", orderId));
 
-        boolean exists = order.getItems().stream()
-                .anyMatch(i -> i.getProduct().getId().equals(req.getProductId()));
-        if (exists) {
+        if (orderProductRepo.existsByOrderIdAndProductId(orderId, req.getProductId())) {
             throw new DuplicateProductInOrderException(req.getProductId());
         }
 
-        Product product = productRepository.findById(req.getProductId())
-                .orElseThrow(()-> new NotFoundException("Product", req.getProductId())  );
+        Order order = orderRepo.findById(orderId)
+                .orElseThrow(() -> new NotFoundException("Order", orderId));
+        Product product = productRepo.findById(req.getProductId())
+                .orElseThrow(() -> new NotFoundException("Product", req.getProductId()));
 
         OrderProduct item = OrderProduct.builder()
                 .order(order)
@@ -113,36 +132,26 @@ public class OrderService {
                 .build();
 
         order.getItems().add(item);
-
-        return mapper.toResponse(order);
+        orderRepo.flush();
+        return getOne(orderId);
     }
 
     public OrderResponse changeProductQuantity(UUID orderId, UUID productId, @Min(1) int quantity) {
-        Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order", orderId));
 
-        OrderProduct item = order.getItems().stream()
-                .filter(i -> i.getProduct().getId().equals(productId))
-                .findFirst()
+        OrderProduct item = orderProductRepo.findByOrderIdAndProductId(orderId, productId)
                 .orElseThrow(() -> new NotFoundException("Order item (product)", productId));
 
         item.setQuantity(quantity);
-        return mapper.toResponse(order);
+        return getOne(orderId);
     }
 
     public OrderResponse removeProduct(UUID orderId, UUID productId) {
-        Order order = orderRepo.findById(orderId)
-                .orElseThrow(() -> new NotFoundException("Order", orderId));
-
-        boolean removed = order.getItems().removeIf(
-                i -> i.getProduct().getId().equals(productId)
-        );
-
-        if (!removed) {
+        int deleted = orderProductRepo.deleteByOrderIdAndProductId(orderId, productId);
+        if (deleted == 0) {
             throw new NotFoundException("Order item (product)", productId);
         }
 
-        return mapper.toResponse(order);
+        return getOne(orderId);
     }
 
     /**
@@ -167,7 +176,7 @@ public class OrderService {
         });
 
         // сами продукты
-        Map<UUID, Product> map = productRepository.findAllById(unique).stream()
+        Map<UUID, Product> map = productRepo.findAllById(unique).stream()
                 .collect(toMap(Product::getId, p -> p));
 
         // недостающие id

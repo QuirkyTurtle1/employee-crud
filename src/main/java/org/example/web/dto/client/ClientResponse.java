@@ -17,5 +17,5 @@ public class ClientResponse {
     private String lastName;
     private String email;
     private String phone;
-    private int ordersCount;
+    private Long ordersCount;
 }
