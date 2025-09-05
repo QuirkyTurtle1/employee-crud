@@ -3,6 +3,7 @@ package org.example.web.controller;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.example.web.dto.order.OrderFilter;
 import org.example.web.dto.order.OrderRequest;
 import org.example.web.dto.order.OrderResponse;
@@ -28,6 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.UUID;
 
+@Slf4j
 @RequestMapping("/api/orders")
 @RestController
 @RequiredArgsConstructor
@@ -38,24 +40,47 @@ public class OrderController {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public OrderResponse create(@Valid @RequestBody OrderRequest req) {
-        return service.create(req);
+        long t0 = System.currentTimeMillis();
+        log.info("POST /api/orders - create: clientId={}", req.getClientId());
+
+        OrderResponse resp = service.create(req);
+
+        log.info("POST /api/orders - success: orderId={},durationMs={}", resp.getId(), System.currentTimeMillis() - t0);
+        return resp;
     }
 
     @PatchMapping("/{id}/status")
     public OrderResponse updateStatus(@PathVariable UUID id,
                                       @RequestParam OrderStatus status) {
-        return service.updateStatus(id, status);
+        long t0 = System.currentTimeMillis();
+        log.info("PATCH /api/orders/{id}/status - updateStatus: id={}, newStatus={}", id, status);
+
+        OrderResponse resp = service.updateStatus(id, status);
+
+        log.info("PATCH /api/orders/{id}/status - updateStatus: id={}, status={}, durationMs={}", id, status, System.currentTimeMillis() - t0);
+        return resp;
     }
 
     @GetMapping("/{id}")
     public OrderResponse getOne(@PathVariable UUID id) {
-        return service.getOne(id);
+        long t0 = System.currentTimeMillis();
+        log.info("GET /api/orders/{id} - getOne: id={}", id);
+
+        OrderResponse resp = service.getOne(id);
+
+        log.info("GET /api/orders/{id} - success: id={}, durationMs={}", id, System.currentTimeMillis() - t0);
+        return resp;
     }
 
     @DeleteMapping("/{id}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID id) {
+        long t0 = System.currentTimeMillis();
+        log.info("DELETE /api/orders/{id} - delete: id={}", id);
+
         service.delete(id);
+
+        log.info("DELETE /api/orders/{id}- success: id={}, durationMs={}", id, System.currentTimeMillis() - t0);
     }
 
     @GetMapping
@@ -63,26 +88,57 @@ public class OrderController {
                                     @PageableDefault(size = 10,
                                             sort = "createdAt",
                                             direction = Sort.Direction.DESC) Pageable pageable) {
-        return service.findAll(filter, pageable);
+        long t0 = System.currentTimeMillis();
+        log.info("GET /api/orders - list: page={}, size={}, sort={}",
+                pageable.getPageNumber(), pageable.getPageSize(), pageable.getSort());
+
+        Page<OrderResponse> resp = service.findAll(filter, pageable);
+
+        log.info("GET /api/orders- success: page={},returned={}, total={} durationMs={}",
+                filter, resp.getTotalPages(), resp.getTotalElements(), System.currentTimeMillis() - t0);
+        return resp;
     }
 
     @PostMapping("/{orderId}")
-    public OrderResponse addProduct (@PathVariable UUID orderId,
-                                     @Valid @RequestBody OrderProductRequest req) {
-        return service.addProduct(orderId, req);
+    public OrderResponse addProduct(@PathVariable UUID orderId,
+                                    @Valid @RequestBody OrderProductRequest req) {
+        long t0 = System.currentTimeMillis();
+        log.info("POST /api/orders/{orderId} - addProduct: orderId={}, productId={}, quantity={}",
+                orderId, req.getProductId(), req.getQuantity());
+
+        OrderResponse resp = service.addProduct(orderId, req);
+        log.info("POST /api/orders/{orderId} - success: orderId={}, productId={}, quantity={}, durationMs={}",
+                orderId, req.getProductId(), req.getQuantity(), System.currentTimeMillis() - t0);
+        return resp;
     }
 
     @PatchMapping("/{orderId}/items/{productId}")
-    public OrderResponse changeProductQuantity (@PathVariable UUID orderId,
-                                                @PathVariable UUID productId,
-                                                @Valid @RequestBody ChangeQuantityRequest req) {
-        return service.changeProductQuantity(orderId, productId, req.quantity());
+    public OrderResponse changeProductQuantity(@PathVariable UUID orderId,
+                                               @PathVariable UUID productId,
+                                               @Valid @RequestBody ChangeQuantityRequest req) {
+        long t0 = System.currentTimeMillis();
+        log.info("PATCH /api/orders/{orderId}/items/{productId} - changeProductQuantity: orderId={}, productId={}, quantity={}",
+                orderId, productId, req.quantity());
+
+        OrderResponse resp = service.changeProductQuantity(orderId, productId, req.quantity());
+
+        log.info("PATCH /api/orders/{orderId}/items/{productId} - success: orderId={}, productId={}, quantity={}, durationMs={}",
+                orderId, productId, req.quantity(), System.currentTimeMillis() - t0);
+        return resp;
     }
 
     @DeleteMapping("/{orderId}/items/{productId}")
-    public OrderResponse removeProduct (@PathVariable UUID orderId,
-                                        @PathVariable UUID productId) {
-        return service.removeProduct(orderId, productId);
+    public OrderResponse removeProduct(@PathVariable UUID orderId,
+                                       @PathVariable UUID productId) {
+        long t0 = System.currentTimeMillis();
+        log.info("DELETE /api/orders/{orderId}/items/{productId} - removeProduct: orderId={}, productId={}",
+                orderId, productId);
+
+        OrderResponse resp = service.removeProduct(orderId, productId);
+
+        log.info("DELETE /api/orders/{orderId}/items/{productId} - success: orderId={}, productId={}, durationMs={}",
+                orderId, productId, System.currentTimeMillis() - t0);
+        return resp;
     }
 
 }
