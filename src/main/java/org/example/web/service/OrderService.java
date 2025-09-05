@@ -52,26 +52,23 @@ public class OrderService {
     private final OrderMapper mapper;
 
     public OrderResponse create(OrderRequest req) {
-        int requested = req.getProducts() == null ? 0 : req.getProducts().size();
-        log.debug("Начало создания заказа: clientId={}, requestedItems={}", req.getClientId(), requested);
+        int requested = (req.getProducts() == null) ? 0 : req.getProducts().size();
+        log.debug("Order create start: clientId={}, requestedItems={}", req.getClientId(), requested);
 
         Client client = fetchClient(req.getClientId());
-        log.debug("Клиент найден: {}", client.getId());
+        log.debug("Client loaded: id={}", client.getId());
 
         Map<UUID, Product> products = fetchProducts(req.getProducts());
-        log.debug("Продукты найдены: {}", products.size());
+        log.debug("Products loaded: {}", products.size());
 
         if (products.size() != requested) {
-            log.warn("Некоторые продукты отсутствуют: запрошено={}, найдено={}",
-                    requested, products.size());
+            log.warn("Some products are missing: requested={}, found={}", requested, products.size());
         }
 
         Set<OrderProduct> items = buildItems(req.getProducts(), products);
 
-        OrderStatus status = req.getStatus() != null
-                ? req.getStatus()
-                : OrderStatus.NEW;
-        log.debug("Создаю заказ: clientId={}, status={}, itemCount={}", client.getId(), status, items.size());
+        OrderStatus status = (req.getStatus() != null) ? req.getStatus() : OrderStatus.NEW;
+        log.debug("Compose order: clientId={}, status={}, itemCount={}", client.getId(), status, items.size());
 
         Order order = Order.builder()
                 .client(client)
@@ -81,60 +78,61 @@ public class OrderService {
         items.forEach(i -> i.setOrder(order));
 
         Order saved = orderRepo.save(order);
-        log.info("Заказ сохранён: orderId={}", saved.getId());
+        log.info("Order saved: id={}", saved.getId());
 
         OrderResponse resp = getOne(saved.getId());
-        log.debug("Заказ преобразован в ответ: id={}", resp.getId());
+        log.debug("Order mapped to response: id={}", resp.getId());
 
         return resp;
     }
 
     public OrderResponse updateStatus(UUID id, OrderStatus status) {
-        log.debug("Заказ updateStatus начало: id={}, newStatus={}", id, status);
+        log.debug("Order updateStatus start: id={}, newStatus={}", id, status);
 
         Order entity = orderRepo.findById(id).orElseThrow(() -> new NotFoundException("Order", id));
         OrderStatus oldStatus = entity.getStatus();
         if (oldStatus == status) {
-            log.debug("Статус заказа не изменен: id={}, status={}", id, oldStatus);
+            log.debug("Order status unchanged: id={}, status={}", id, oldStatus);
             return getOne(id);
         }
 
         entity.setStatus(status);
-        log.info("Статус заказа обновлен: id={}, from={}, to={}", id, oldStatus, status);
+        log.info("Order status updated: id={}, from={}, to={}", id, oldStatus, status);
         return getOne(id);
     }
 
     public OrderResponse getOne(UUID id) {
-        log.debug("Заказ getOne начало: id={}", id);
+        log.debug("Order getOne start: id={}", id);
 
         Order entity = orderRepo.findDetailedById(id).orElseThrow(() -> new NotFoundException("Order", id));
 
         if (log.isDebugEnabled()) {
             int items = (entity.getItems() == null) ? 0 : entity.getItems().size();
-            log.debug("Заказ был загружен: id={}, itemCount={}", entity.getId(), items);
+            log.debug("Order loaded: id={}, itemCount={}", entity.getId(), items);
         }
 
         return mapper.toResponse(entity);
     }
 
     public void delete(UUID id) {
-        log.debug("Заказ delete начало: id={}", id);
+        log.debug("Order delete start: id={}", id);
 
         Order entity = orderRepo.findById(id).orElseThrow(() -> new NotFoundException("Order", id));
 
         orderRepo.delete(entity);
-        log.info("Заказ удален: id={}", id);
+        log.info("Order deleted: id={}", id);
     }
 
     public Page<OrderResponse> findAll(OrderFilter filter, Pageable pageable) {
-        log.debug("Список заказов начало: orderFilter={}", filter);
+        log.debug("Find orders start: filter={}", filter);
 
         Specification<Order> spec = OrderSpecs.build(filter);
         Page<Order> page = orderRepo.findAll(spec, pageable);
-        log.debug("Загруженная страница заказов: number={}, returned={}, total={}",
+        log.debug("Orders page loaded: number={}, returned={}, total={}",
                 page.getNumber(), page.getNumberOfElements(), page.getTotalElements());
+
         if (page.isEmpty()) {
-            log.debug("Найденные заказы: пусто");
+            log.debug("Find orders: empty result");
             return Page.empty(pageable);
         }
 
@@ -150,13 +148,13 @@ public class OrderService {
                 .filter(Objects::nonNull)
                 .map(mapper::toResponse)
                 .toList();
-        log.debug("Найденные заказы: {}", content.size());
+        log.debug("Orders mapped: {}", content.size());
 
         return new PageImpl<>(content, pageable, page.getTotalElements());
     }
 
     public OrderResponse addProduct(UUID orderId, @Valid OrderProductRequest req) {
-        log.debug("Добавление продукта в заказ начало: orderId={}, productId={}, quantity={}",
+        log.debug("Order addProduct start: orderId={}, productId={}, qty={}",
                 orderId, req.getProductId(), req.getQuantity());
 
         if (orderProductRepo.existsByOrderIdAndProductId(orderId, req.getProductId())) {
@@ -165,12 +163,15 @@ public class OrderService {
 
         Order order = orderRepo.findById(orderId)
                 .orElseThrow(() -> new NotFoundException("Order", orderId));
-        log.debug("Заказ загружен: id={}, currentItems={}",
-                order.getId(), order.getItems().size());
+
+        if (log.isDebugEnabled()) {
+            int currentItems = (order.getItems() == null) ? 0 : order.getItems().size();
+            log.debug("Order loaded: id={}, currentItems={}", order.getId(), currentItems);
+        }
 
         Product product = productRepo.findById(req.getProductId())
                 .orElseThrow(() -> new NotFoundException("Product", req.getProductId()));
-        log.debug("Продукт загружен: id={}", product.getId());
+        log.debug("Product loaded: id={}", product.getId());
 
         OrderProduct item = OrderProduct.builder()
                 .order(order)
@@ -180,13 +181,14 @@ public class OrderService {
 
         order.getItems().add(item);
         orderRepo.flush();
-        log.info("Продукт был добавлен в заказ: orderId={}, productId={}, quantity={}",
+
+        log.info("Order updated: item added: orderId={}, productId={}, qty={}",
                 orderId, req.getProductId(), req.getQuantity());
         return getOne(orderId);
     }
 
     public OrderResponse changeProductQuantity(UUID orderId, UUID productId, @Min(1) int quantity) {
-        log.debug("Изменение количество продукта в заказе начало: orderId={}, productId={}, newQuantity={}",
+        log.debug("Order changeProductQuantity start: orderId={}, productId={}, newQty={}",
                 orderId, productId, quantity);
 
         OrderProduct item = orderProductRepo.findByOrderIdAndProductId(orderId, productId)
@@ -194,24 +196,25 @@ public class OrderService {
 
         int oldQuantity = item.getQuantity();
         if (oldQuantity == quantity) {
-            log.debug("Количество не изменилось: orderId={}, productId={}, quantity={}", orderId, productId, quantity);
+            log.debug("Quantity unchanged: orderId={}, productId={}, qty={}", orderId, productId, quantity);
             return getOne(orderId);
         }
 
         item.setQuantity(quantity);
-        log.info("Было изменено количество продукта в заказе: orderId={}, productId={}, from={}, to={}",
+        log.info("Order item quantity updated: orderId={}, productId={}, from={}, to={}",
                 orderId, productId, oldQuantity, quantity);
         return getOne(orderId);
     }
 
     public OrderResponse removeProduct(UUID orderId, UUID productId) {
-        log.debug("Удаление продукта из заказа начало: orderId={}, productId={}", orderId, productId);
+        log.debug("Order removeProduct start: orderId={}, productId={}", orderId, productId);
+
         int deleted = orderProductRepo.deleteByOrderIdAndProductId(orderId, productId);
         if (deleted == 0) {
             throw new NotFoundException("Order item (product)", productId);
         }
-        log.debug("Продукт был удален из заказа: orderId={}, productId={}", orderId, productId);
 
+        log.info("Order updated: item removed: orderId={}, productId={}", orderId, productId);
         return getOne(orderId);
     }
 
