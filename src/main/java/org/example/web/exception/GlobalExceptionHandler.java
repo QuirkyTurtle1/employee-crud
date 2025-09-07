@@ -45,7 +45,8 @@ public class GlobalExceptionHandler {
             DuplicateProductNameException.class,
             DuplicateProductInOrderException.class,
             ProductInUseException.class,
-            org.springframework.dao.DataIntegrityViolationException.class
+            org.springframework.dao.DataIntegrityViolationException.class,
+            ClientInUseException.class
     })
     public ResponseEntity<ApiError> handleConflict(Exception ex, HttpServletRequest req) {
         return respond(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), req, ex);

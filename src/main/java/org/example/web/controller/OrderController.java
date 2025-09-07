@@ -95,7 +95,7 @@ public class OrderController {
         Page<OrderResponse> resp = service.findAll(filter, pageable);
 
         log.info("GET /api/orders- success: page={},returned={}, total={} durationMs={}",
-                filter, resp.getTotalPages(), resp.getTotalElements(), System.currentTimeMillis() - t0);
+                resp.getNumber(), resp.getNumberOfElements(), resp.getTotalElements(), System.currentTimeMillis() - t0);
         return resp;
     }
 
