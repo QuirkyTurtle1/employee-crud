@@ -27,7 +27,7 @@ public class GlobalExceptionHandler {
         if (status.is5xxServerError()) log.error("{} -> {}", head, msg, ex);
         else                           log.warn("{} -> {}", head, msg);
 
-        String requestId = org.slf4j.MDC.get("requestId"); // позже появится
+        String requestId = org.slf4j.MDC.get("requestId");
         ApiError body = new ApiError(
                 java.time.Instant.now(),
                 status.value(),

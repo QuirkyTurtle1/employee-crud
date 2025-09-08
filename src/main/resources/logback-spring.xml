@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true">
+
+
+    <springProperty name="APP_NAME" source="spring.application.name" defaultValue="employee-crud"/>
+
+>
+    <property name="CONSOLE_PATTERN"
+              value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%thread] %X{requestId:- -} %logger{36} - %msg%n"/>
+
+>
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${CONSOLE_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <queueSize>1024</queueSize>
+        <discardingThreshold>0</discardingThreshold>
+        <includeCallerData>false</includeCallerData>
+        <appender-ref ref="CONSOLE"/>
+    </appender>
+
+  >
+    <springProfile name="dev">
+        <logger name="org.springframework" level="INFO"/>
+        <!-- <logger name="org.hibernate.SQL" level="DEBUG"/> -->
+        <!-- <logger name="org.hibernate.orm.jdbc.bind" level="TRACE"/> -->
+    </springProfile>
+
+
+    <springProfile name="prod">
+        <logger name="org.springframework" level="WARN"/>
+        <logger name="org.hibernate" level="WARN"/>
+    </springProfile>
+
+
+    <root level="${LOG_LEVEL_ROOT:-INFO}">
+        <appender-ref ref="ASYNC"/>
+    </root>
+</configuration>
