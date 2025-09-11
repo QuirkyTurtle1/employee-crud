@@ -79,7 +79,7 @@ public class ClientService {
                 .orElseThrow(() -> new NotFoundException("Client", id));
 
         if (orderRepo.existsByClientId(id)) {
-            throw new ClientInUseException(id); // CHANGED: было IllegalStateException → теперь конфликты идут в 409
+            throw new ClientInUseException(id);
         }
         repo.delete(entity);
         log.info("Client deleted: id={}", id);
@@ -89,10 +89,10 @@ public class ClientService {
                                          Pageable pageable) {
         log.debug("Find clients start: filter={}", filter);
         Specification<Client> spec = Specification
-                .where(SpecBuilder.<Client>like("firstName", filter.firstName().orElse(null)))
-                .and(SpecBuilder.like("lastName", filter.lastName().orElse(null)))
-                .and(SpecBuilder.like("email", filter.email().orElse(null)))
-                .and(SpecBuilder.like("phone", filter.phone().orElse(null)));
+                .where(SpecBuilder.<Client>like("firstName", filter.firstName()))
+                .and(SpecBuilder.like("lastName", filter.lastName()))
+                .and(SpecBuilder.like("email", filter.email()))
+                .and(SpecBuilder.like("phone", filter.phone()));
 
         Page<Client> page = repo.findAll(spec, pageable);
         log.debug("Clients page loaded: number={}, returned={}, total={}",

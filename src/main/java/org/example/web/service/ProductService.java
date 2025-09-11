@@ -78,10 +78,10 @@ public class ProductService {
     public Page<ProductResponse> list(ProductFilter filter, Pageable pageable) {
         log.debug("Find products start: filter={}", filter);
         Specification<Product> spec = Specification
-                .where(SpecBuilder.<Product>like("name", filter.name().orElse(null)))
+                .where(SpecBuilder.<Product>like("name", filter.name()))
                 .and(SpecBuilder.between("price",
-                        filter.priceMin().orElse(null),
-                        filter.priceMax().orElse(null)));
+                        filter.priceMin(),
+                        filter.priceMax()));
 
         Page<Product> page = repo.findAll(spec, pageable);
         log.debug("Products page loaded: number={}, returned={}, total={}",

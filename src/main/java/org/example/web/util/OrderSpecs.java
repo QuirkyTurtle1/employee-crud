@@ -19,8 +19,8 @@ public final class OrderSpecs {
     }
 
     public static Specification<Order> build(OrderFilter f) {
-        return Specification.where(SpecBuilder.<Order>eq("status", f.status().orElse(null)))
-                .and(SpecBuilder.between("createdAt", f.from().orElse(null), f.to().orElse(null)))
-                .and(hasProduct(f.productId().orElse(null)));
+        return Specification.where(SpecBuilder.<Order>eq("status", f.status()))
+                .and(SpecBuilder.between("createdAt", f.from(), f.to()))
+                .and(hasProduct(f.productId()));
     }
 }
