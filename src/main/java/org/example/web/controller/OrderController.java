@@ -93,6 +93,8 @@ public class OrderController {
     @PatchMapping("/{id}/status")
     public OrderResponse updateStatus(@Parameter(description = "Order ID", required = true)
                                       @PathVariable UUID id,
+                                      @Parameter(description = "New status of the order", required = true,
+                                              schema = @Schema(implementation = OrderStatus.class))
                                       @RequestParam OrderStatus status) {
         long t0 = System.currentTimeMillis();
         log.info("PATCH /api/orders/{id}/status - updateStatus: id={}, newStatus={}", id, status);
