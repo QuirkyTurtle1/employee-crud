@@ -45,11 +45,17 @@ public class GlobalExceptionHandler {
             DuplicateProductNameException.class,
             DuplicateProductInOrderException.class,
             ProductInUseException.class,
-            org.springframework.dao.DataIntegrityViolationException.class,
             ClientInUseException.class
     })
     public ResponseEntity<ApiError> handleConflict(Exception ex, HttpServletRequest req) {
         return respond(HttpStatus.CONFLICT, "CONFLICT", ex.getMessage(), req, ex);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleIntegrityViolation(DataIntegrityViolationException ex,
+                                                             HttpServletRequest req) {
+        String msg = "Product cannot be deleted because it is used in existing orders";
+        return respond(HttpStatus.CONFLICT, "PRODUCT_IN_USE", msg, req, ex);
     }
 
     @ExceptionHandler(NotFoundException.class)

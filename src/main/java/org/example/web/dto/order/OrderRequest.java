@@ -2,6 +2,7 @@ package org.example.web.dto.order;
 
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -25,6 +26,7 @@ public class OrderRequest {
     @NotNull
     private OrderStatus status;
 
+    @NotEmpty
     @Schema(description = "List of products in the order",
             example = "[{\"productId\": \"321e4567-e89b-12d3-a456-426614174000\", \"quantity\": 2}]")
     List<@Valid OrderProductRequest> products;

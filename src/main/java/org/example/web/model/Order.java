@@ -54,6 +54,7 @@ public class Order {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @BatchSize(size = 50)
+    @Builder.Default
     private Set<OrderProduct> items = new HashSet<>();
 
     @Formula("(select coalesce(sum(op.quantity),0) " +

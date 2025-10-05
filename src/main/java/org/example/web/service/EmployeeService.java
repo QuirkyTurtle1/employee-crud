@@ -29,7 +29,7 @@ public class EmployeeService {
     private final EmployeeMapper mapper;
 
 
-    public EmployeeResponse create ( EmployeeRequest employeeRequest) {
+    public EmployeeResponse create(EmployeeRequest employeeRequest) {
         if (repository.existsByEmailIgnoreCase(employeeRequest.getEmail())) {
             throw new DuplicateEmailException(employeeRequest.getEmail());
         }
@@ -42,24 +42,23 @@ public class EmployeeService {
 
     public EmployeeResponse findById(UUID id) {
         Employee employee = repository.findById(id)
-                .orElseThrow(()-> new NotFoundException("Employee",id));
+                .orElseThrow(() -> new NotFoundException("Employee", id));
 
         return mapper.toDto(employee);
 
     }
 
 
-
     public Page<EmployeeResponse> findAll(EmployeeFilter f, Pageable pageable) {
-        Specification<Employee> spec = Specification.where(EmployeeSpecs.firstNameContains(f.firstName())).
-                and(EmployeeSpecs.lastNameContains(f.lastName()))
+        Specification<Employee> spec = Specification.where(EmployeeSpecs.firstNameContains(f.firstName()))
+                .and(EmployeeSpecs.lastNameContains(f.lastName()))
                 .and(EmployeeSpecs.hasRole(f.role()));
 
         return repository.findAll(spec, pageable).map(mapper::toDto);
     }
 
     public EmployeeResponse updateEmployee(UUID id, @Valid EmployeeRequest employeeRequest) {
-        Employee employee = repository.findById(id).orElseThrow(() -> new NotFoundException("Employee",id));
+        Employee employee = repository.findById(id).orElseThrow(() -> new NotFoundException("Employee", id));
 
         if (!employee.getEmail().equalsIgnoreCase(employeeRequest.getEmail())
                 && repository.existsByEmailIgnoreCase(employeeRequest.getEmail())) {
@@ -76,7 +75,7 @@ public class EmployeeService {
 
     public void delete(UUID id) {
         if (!repository.existsById(id)) {
-            throw new NotFoundException("Employee",id);
+            throw new NotFoundException("Employee", id);
         }
         repository.deleteById(id);
     }

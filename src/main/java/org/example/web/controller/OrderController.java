@@ -167,6 +167,22 @@ public class OrderController {
         return resp;
     }
 
+    @Operation(summary = "Get orders by client ID",
+            description = "Returns a paginated list of orders for the given client.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Orders found"),
+            @ApiResponse(responseCode = "404", description = "Client not found",
+                    content = @Content(mediaType = "application/json",
+                            schema = @Schema(implementation = ApiError.class)))
+    })
+    @GetMapping("/{id}/orders")
+    public Page<OrderResponse> getClientOrders(
+            @Parameter(description = "Client ID", required = true) @PathVariable UUID id,
+            @ParameterObject @PageableDefault(size = 10, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+    ) {
+        return service.findByClientId(id, pageable);
+    }
+
     @Operation(summary = "Add product to order",
             description = "Adds a product with the given quantity to an existing order.")
     @ApiResponses(value = {

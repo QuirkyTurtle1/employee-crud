@@ -87,6 +87,9 @@ public class OrderService {
     }
 
     public OrderResponse updateStatus(UUID id, OrderStatus status) {
+        if (status == null) {
+            throw new IllegalArgumentException("Order status cannot be null");
+        }
         log.debug("Order updateStatus start: id={}, newStatus={}", id, status);
 
         Order entity = orderRepo.findById(id).orElseThrow(() -> new NotFoundException("Order", id));
@@ -151,6 +154,14 @@ public class OrderService {
         log.debug("Orders mapped: {}", content.size());
 
         return new PageImpl<>(content, pageable, page.getTotalElements());
+    }
+
+    public Page<OrderResponse> findByClientId(UUID clientId, Pageable pageable) {
+        if (!clientRepo.existsById(clientId)) {
+            throw new NotFoundException("Client", clientId);
+        }
+        return orderRepo.findByClientId(clientId, pageable)
+                .map(mapper::toResponse);
     }
 
     public OrderResponse addProduct(UUID orderId, @Valid OrderProductRequest req) {
@@ -262,6 +273,7 @@ public class OrderService {
                         .build())
                 .collect(Collectors.toSet());
     }
+
 
 
 }

@@ -71,6 +71,7 @@ public class ProductService {
         log.debug("Product delete start: id={}", id);
 
         Product entity = repo.findById(id).orElseThrow(()-> new NotFoundException("Product",    id));
+
         repo.delete(entity);
         log.info("Product deleted: id={}", id);
     }
@@ -91,4 +92,6 @@ public class ProductService {
         log.debug("Products mapped: {}", resp.getNumberOfElements());
         return resp;
     }
+
+
 }

@@ -1,6 +1,9 @@
 package org.example.web.repository;
 
 import org.example.web.model.Order;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Range;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -20,4 +23,5 @@ public interface OrderRepository extends JpaRepository<Order, UUID>, JpaSpecific
     @EntityGraph(attributePaths = {"client", "items", "items.product"})
     List<Order> findByIdIn(Collection<UUID> ids);
 
+    Page<Order> findByClientId(UUID clientId, Pageable pageable);
 }

@@ -15,6 +15,8 @@ import org.springframework.context.annotation.Primary;
 public interface OrderMapper {
 
     @Mapping(source = "client.id", target = "clientId")
+    @Mapping(target = "itemsTotal",
+            expression = "java(entity.getItems() == null ? 0 : entity.getItems().stream().mapToInt(i -> i.getQuantity()).sum())")
     OrderResponse toResponse (Order entity);
 
     @Mapping(target = "productId", source = "product.id")

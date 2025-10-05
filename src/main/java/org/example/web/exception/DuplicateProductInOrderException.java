@@ -9,6 +9,6 @@ import java.util.UUID;
 
 public class DuplicateProductInOrderException extends RuntimeException {
     public DuplicateProductInOrderException(UUID productId) {
-        super("Повторяющийся товар в заказе: " + productId);
+        super("Duplicate product " + productId+ " in order" );
     }
 }
